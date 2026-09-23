@@ -1,31 +1,51 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { allowedByRobots, fetchWithRetry, parseDeckLinks, parseDeckPage, preserveAfterFailure, sleep, validDeckCode, validateData } from './lib.mjs';
+import { collectRankings, makeRatedDeck, matchRating, RANKING_URL } from './tier-source.mjs';
+import { CLASSES } from '../src/classes.js';
 
 const output=resolve(process.env.OUTPUT_PATH||'public/data/decks.json');
 const base=process.env.SOURCE_ORIGIN||'https://hearthstone-decks.net';
-const metaUrl=`${base}/standard-deck/`;
-const tierRule='출처에 메타 티어가 없으므로 모든 덱을 미평가로 표시합니다. 개인 Score는 승률이나 티어로 사용하지 않습니다.';
-async function previous() { try{return JSON.parse(await readFile(output,'utf8'));}catch{return null;} }
-async function atomic(data) { await mkdir(dirname(output),{recursive:true});const temp=`${output}.${process.pid}.tmp`;await writeFile(temp,JSON.stringify(data,null,2)+'\n');await rename(temp,output); }
-async function run() {
-  const old=await previous();
-  const attemptedAt=new Date().toISOString();
-  try {
-    const robots=await fetchWithRetry(`${base}/robots.txt`);
-    if(!allowedByRobots(robots,'/standard-deck/')) throw new Error('robots.txt가 수집 경로를 허용하지 않습니다.');
-    const found=parseDeckLinks(await fetchWithRetry(metaUrl),base);
-    const unique=[...new Map(found.map(x=>[x.sourceUrl,x])).values()];if(!unique.length)throw new Error('목록 페이지에서 덱 상세 링크를 찾지 못했습니다(페이지 구조 변경 가능).');
-    const decks=[],counts={};
-    console.log(`덱 상세 링크 ${unique.length}개 발견`);
-    for(const link of unique) { const guessedClass = link.name.match(/death[ -]?knight|demon[ -]?hunter|druid|hunter|mage|paladin|priest|rogue|shaman|warlock|warrior/i)?.[0].toLowerCase().replace(/ /g,'-'); if((counts[guessedClass]||0)>=2)continue; if(!allowedByRobots(robots,new URL(link.sourceUrl).pathname))continue; await sleep(Number(process.env.REQUEST_DELAY_MS||1000));const deck=parseDeckPage(await fetchWithRetry(link.sourceUrl),link);if(deck.class&&validDeckCode(deck.deckCode)&&(counts[deck.class]||0)<2){decks.push(deck);counts[deck.class]=(counts[deck.class]||0)+1;}if(Object.keys(counts).length===11&&Object.values(counts).every(n=>n>=2))break; }
-    if(!decks.length)throw new Error('유효한 덱 코드가 있는 덱을 찾지 못했습니다.');
-    const data=validateData({schemaVersion:1,collectedAt:attemptedAt,collectionAttemptedAt:attemptedAt,source:{name:'Hearthstone-Decks.net',url:metaUrl,scope:'정규전 최신 공개 덱',tierRule},decks}); await atomic(data);
-    console.log(`${decks.length}개 덱 수집 완료: ${data.collectedAt}`);
-  } catch(error) {
-    console.error(`수집 실패: ${error.message}`);
+const metaUrl=base+'/standard-deck/';
+async function previous(){try{return JSON.parse(await readFile(output,'utf8'));}catch{return null;}}
+async function atomic(data){await mkdir(dirname(output),{recursive:true});const temp=output+'.'+process.pid+'.tmp';await writeFile(temp,JSON.stringify(data,null,2)+'\n');await rename(temp,output);}
+async function run(){
+  const old=await previous(),attemptedAt=new Date().toISOString();
+  try{
+    const report=await collectRankings(),decks=[];
+    const links=report.links.filter(link=>matchRating(link.name,report.ratings));
+    if(!links.length)throw new Error('티어 표와 연결되는 보고서 덱이 없습니다.');
+    for(const link of links){
+      if(!allowedByRobots(report.robots,new URL(link.sourceUrl).pathname))continue;
+      await sleep(Number(process.env.REQUEST_DELAY_MS||1000));
+      const deck=makeRatedDeck(link,await fetchWithRetry(link.sourceUrl),report);
+      if(deck)decks.push(deck);
+    }
+    if(!decks.length)throw new Error('실제 티어와 유효한 코드가 있는 덱이 없습니다.');
+    const ratedClasses=new Set(decks.map(d=>d.class)),counts={};
+    if(CLASSES.some(([id])=>!ratedClasses.has(id))){
+      const robots=await fetchWithRetry(base+'/robots.txt');
+      if(!allowedByRobots(robots,'/standard-deck/'))throw new Error('보완 출처 robots.txt 제한');
+      const found=parseDeckLinks(await fetchWithRetry(metaUrl),base);
+      for(const link of found){
+        const guessed=link.name.match(/death[ -]?knight|demon[ -]?hunter|druid|hunter|mage|paladin|priest|rogue|shaman|warlock|warrior/i)?.[0].toLowerCase().replace(/ /g,'-');
+        if(!guessed||ratedClasses.has(guessed)||(counts[guessed]||0)>=2||!allowedByRobots(robots,new URL(link.sourceUrl).pathname))continue;
+        await sleep(Number(process.env.REQUEST_DELAY_MS||1000));
+        const deck=parseDeckPage(await fetchWithRetry(link.sourceUrl),link);
+        if(deck.class&&validDeckCode(deck.deckCode)){
+          decks.push({...deck,sourceName:'Hearthstone-Decks.net',unratedReason:'현재 vS 티어 표에 평가가 없는 직업의 공개 전설 덱입니다.'});
+          counts[deck.class]=(counts[deck.class]||0)+1;
+        }
+      }
+    }
+    const unique=[...new Map(decks.map(d=>[d.deckCode,d])).values()];
+    const data=validateData({schemaVersion:1,collectedAt:attemptedAt,collectionAttemptedAt:attemptedAt,source:{name:'Vicious Syndicate',url:RANKING_URL,reportUrl:report.reportUrl,reportNumber:report.reportNumber,reportDate:report.date,rankScope:report.rankScope,scope:'정규전 · '+report.rankScope,requiresRatings:true,tierRule:'vS 공개 티어 표의 덱 유형 평가입니다. 같은 보고서의 추천 덱 코드와 연결합니다. 순위표에 없는 직업의 보완 덱에는 티어를 임의 부여하지 않습니다. 하루 4회 새 보고서를 확인하며 출처의 평가는 보고서 발행 시 갱신됩니다.'},decks:unique});
+    await atomic(data);
+    console.log(data.decks.length+'개 덱 수집 완료 ('+data.decks.filter(d=>d.tier!==null).length+'개 티어 평가): '+data.collectedAt);
+  }catch(error){
+    console.error('수집 실패: '+error.message);
     const preserved=preserveAfterFailure(old,error.message,attemptedAt);
-    if(preserved){ await atomic(preserved); console.error(`기존 데이터와 정상 수집 시각(${old.collectedAt??'없음'})을 보존했습니다.`); }
+    if(preserved)await atomic(preserved);
     throw error;
   }
 }
