@@ -62,9 +62,25 @@ export function decodeDeckCode(code) {
   const heroCount=readVarint(bytes,state);if(heroCount<1||heroCount>2)throw new Error('영웅 수');const heroes=[];for(let i=0;i<heroCount;i++){const id=readVarint(bytes,state);if(!id)throw new Error('영웅 ID');heroes.push(id);}
   const cards=[];for(const copies of [1,2]){const count=readVarint(bytes,state);if(count>60)throw new Error('카드 항목 수');for(let i=0;i<count;i++){const id=readVarint(bytes,state);if(!id)throw new Error('카드 ID');cards.push([id,copies]);}}
   const other=readVarint(bytes,state);if(other>60)throw new Error('기타 카드 수');for(let i=0;i<other;i++){const id=readVarint(bytes,state),copies=readVarint(bytes,state);if(!id||copies<3||copies>99)throw new Error('기타 카드');cards.push([id,copies]);}
-  while(state.at<bytes.length){if(readVarint(bytes,state)!==0)throw new Error('알 수 없는 후행 데이터');}
+  // Optional sideboards use three count groups, with an owner card ID per entry.
+  const sideboards=[];
+  if(state.at<bytes.length){
+    const flag=bytes[state.at++];
+    if(flag!==0&&flag!==1)throw new Error('사이드보드 헤더');
+    if(flag===1){
+      for(const copies of [1,2,0]){
+        const count=readVarint(bytes,state);if(count>60)throw new Error('사이드보드 항목 수');
+        for(let i=0;i<count;i++){
+          const id=readVarint(bytes,state),amount=copies||readVarint(bytes,state),owner=readVarint(bytes,state);
+          if(!id||!owner||amount<1||amount>99||!cards.some(([cardId])=>cardId===owner))throw new Error('사이드보드 카드');
+          sideboards.push([id,amount,owner]);
+        }
+      }
+    }
+  }
+  if(state.at!==bytes.length)throw new Error('알 수 없는 후행 데이터');
   const total=cards.reduce((n,[,copies])=>n+copies,0);if(cards.length<1||total<30||total>40)throw new Error('완전한 덱 카드 수가 아님');
-  return {version,format,heroes,cards,total};
+  return {version,format,heroes,cards,sideboards,total};
 }
 export function validDeckCode(code) { try { decodeDeckCode(code);return true; } catch { return false; } }
 export function validateData(data) { return assertData(data); }

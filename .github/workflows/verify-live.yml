@@ -19,19 +19,6 @@ jobs:
           curl --fail --show-error --location --max-time 30 https://hearthstone-decks.net/standard-deck/ -o diagnostics/listing.html
           wc -c diagnostics/*
       - run: npm test
-      - name: Inspect actual deck markup
-        run: |
-          node --input-type=module <<'JS'
-          import {parseDeckPage,decodeDeckCode} from './scripts/lib.mjs';
-          const url='https://hearthstone-decks.net/uub-egg-death-knight-21-legend-unknown-score-18-7/';
-          const r=await fetch(url); const html=await r.text();
-          console.log('DETAIL_HTTP',r.status);
-          console.log('INPUTS',html.match(/<input[^>]*>/gi)?.filter(x=>/AAE|deck|code/i.test(x)));
-          console.log('META_DATE',html.match(/<meta[^>]*published[^>]*>/gi));
-          const deck=parseDeckPage(html,{sourceUrl:url,name:'UUB Egg Death Knight'});
-          console.log('PARSED',JSON.stringify(deck));
-          try{console.log('DECODED',JSON.stringify(decodeDeckCode(deck.deckCode)))}catch(e){console.log('DECODE_ERROR',e.message)}
-          JS
       - name: Collect live data
         run: npm run collect
       - run: npm run validate:data
