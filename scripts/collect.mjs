@@ -14,7 +14,7 @@ async function run() {
   try {
     const robots=await fetchWithRetry(`${base}/robots.txt`);
     if(!allowedByRobots(robots,'/standard-deck/')) throw new Error('robots.txt가 수집 경로를 허용하지 않습니다.');
-    const found=[];for(let page=1;page<=5;page++){const url=page===1?metaUrl:`${metaUrl}page/${page}/`;const links=parseDeckLinks(await fetchWithRetry(url),base);if(!links.length)break;found.push(...links);}
+    const found=parseDeckLinks(await fetchWithRetry(metaUrl),base);
     const unique=[...new Map(found.map(x=>[x.sourceUrl,x])).values()];if(!unique.length)throw new Error('목록 페이지에서 덱 상세 링크를 찾지 못했습니다(페이지 구조 변경 가능).');
     const decks=[],counts={};
     for(const link of unique) { await sleep(Number(process.env.REQUEST_DELAY_MS||1000));const deck=parseDeckPage(await fetchWithRetry(link.sourceUrl),link);if(deck.class&&validDeckCode(deck.deckCode)&&(counts[deck.class]||0)<2){decks.push(deck);counts[deck.class]=(counts[deck.class]||0)+1;}if(Object.keys(counts).length===11&&Object.values(counts).every(n=>n>=2))break; }
