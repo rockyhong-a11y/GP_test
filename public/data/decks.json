@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": null,
+  "source": {
+    "name": "Hearthstone-Decks.net",
+    "url": "https://hearthstone-decks.net/standard-deck/",
+    "scope": "정규전 최신 공개 덱",
+    "tierRule": "출처에 메타 티어가 없으므로 모든 덱을 미평가로 표시합니다. 개인 Score는 승률이나 티어로 사용하지 않습니다."
+  },
+  "decks": [],
+  "collectionError": "fetch failed (EAI_AGAIN)"
+}
