@@ -35,7 +35,8 @@ export function parseDeckLinks(html, base='https://hearthstone-decks.net') {
 }
 const CLASS_WORDS=[['death-knight',/death[ -]?knight/i],['demon-hunter',/demon[ -]?hunter/i],['druid',/druid/i],['hunter',/hunter/i],['mage',/mage/i],['paladin',/paladin/i],['priest',/priest/i],['rogue',/rogue/i],['shaman',/shaman/i],['warlock',/warlock/i],['warrior',/warrior/i]];
 export function parseDeckPage(html, link) {
-  const title=entities(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]?.replace(/<[^>]+>/g,' ').trim()||link.name);
+  const headings=[...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)].map(m=>entities(m[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim()));
+  const title=headings.find(h=>/\blegend\b/i.test(h)&&CLASS_WORDS.some(([,re])=>re.test(h)))||link.name;
   const klass=CLASS_WORDS.find(([,re])=>re.test(`${title} ${html.match(/class=["'][^"']*(?:category|class)[^"']*["'][^>]*>([^<]+)/i)?.[1]||''}`))?.[0]||null;
   const rawDate=html.match(/<time[^>]*datetime=["']([^"']+)["']/i)?.[1] || html.match(/<meta[^>]*property=["']article:published_time["'][^>]*content=["']([^"']+)["']/i)?.[1]; const date=rawDate&&Number.isFinite(Date.parse(rawDate))?new Date(rawDate).toISOString():null;
   return {id:new URL(link.sourceUrl).pathname.split('/').filter(Boolean).pop(),name:title,class:klass,tier:null,tierMethod:'unrated',winRate:null,sampleSize:null,sourceDate:date,sourceUrl:link.sourceUrl,deckCode:parseDeckCode(html)};
