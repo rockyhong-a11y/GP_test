@@ -34,6 +34,13 @@ export function parseVsDeckCode(html){
   const candidates=[...html.matchAll(/<input\b[^>]*>/gi)].filter(([s])=>/\bname=["']deckstring["']/i.test(s)).map(([s])=>decode(s.match(/\bvalue=["']([^"']+)/i)?.[1]||''));
   return candidates.find(validDeckCode)||null;
 }
+
+export function makeRatedDeck(link,html,report){
+  const rating=matchRating(link.name,report.ratings),deckCode=parseVsDeckCode(html);
+  if(!rating||!deckCode)return null;
+  return {id:'vs-'+new URL(link.sourceUrl).pathname.split('/').filter(Boolean).pop(),name:link.name,class:rating.class,archetype:rating.name,tier:rating.tier,tierMethod:'source',tierSourceUrl:report.reportUrl,tierDate:report.date,rankScope:report.rankScope,winRate:null,sampleSize:null,sourceDate:null,sourceUrl:link.sourceUrl,sourceName:'Vicious Syndicate',deckCode};
+}
+
 export async function collectRankings(){
   const robots=await fetchWithRetry('https://www.vicioussyndicate.com/robots.txt');
   if(!allowedByRobots(robots,new URL(RANKING_URL).pathname))throw new Error('티어 출처 robots.txt 제한');

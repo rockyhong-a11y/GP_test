@@ -1,0 +1,152 @@
+[
+  {
+    "text": "Tier 1",
+    "level": "1",
+    "top": 0,
+    "height": 67
+  },
+  {
+    "text": "Tier 2",
+    "level": "1",
+    "top": 67,
+    "height": 167
+  },
+  {
+    "text": "Tier 3",
+    "level": "1",
+    "top": 234,
+    "height": 268
+  },
+  {
+    "text": "Tier 4",
+    "level": "1",
+    "top": 502,
+    "height": 201
+  },
+  {
+    "text": "Dragon Warrior",
+    "level": "2",
+    "top": 0,
+    "height": 33
+  },
+  {
+    "text": "Pirate Warrior",
+    "level": "2",
+    "top": 33,
+    "height": 33
+  },
+  {
+    "text": "Egg DeathKnight",
+    "level": "2",
+    "top": 67,
+    "height": 33
+  },
+  {
+    "text": "Thief Priest",
+    "level": "2",
+    "top": 100,
+    "height": 33
+  },
+  {
+    "text": "Ayaya Rogue",
+    "level": "2",
+    "top": 134,
+    "height": 33
+  },
+  {
+    "text": "Mug Shaman",
+    "level": "2",
+    "top": 167,
+    "height": 33
+  },
+  {
+    "text": "Attack Druid",
+    "level": "2",
+    "top": 201,
+    "height": 33
+  },
+  {
+    "text": "Quest Priest",
+    "level": "2",
+    "top": 234,
+    "height": 33
+  },
+  {
+    "text": "Burn Mage",
+    "level": "2",
+    "top": 268,
+    "height": 33
+  },
+  {
+    "text": "Unholy DeathKnight",
+    "level": "2",
+    "top": 301,
+    "height": 33
+  },
+  {
+    "text": "Void DemonHunter",
+    "level": "2",
+    "top": 335,
+    "height": 33
+  },
+  {
+    "text": "Zee Shaman",
+    "level": "2",
+    "top": 368,
+    "height": 33
+  },
+  {
+    "text": "Herald Rogue",
+    "level": "2",
+    "top": 402,
+    "height": 33
+  },
+  {
+    "text": "Herald Shaman",
+    "level": "2",
+    "top": 435,
+    "height": 33
+  },
+  {
+    "text": "Herald Warlock",
+    "level": "2",
+    "top": 469,
+    "height": 33
+  },
+  {
+    "text": "Control Priest",
+    "level": "2",
+    "top": 502,
+    "height": 33
+  },
+  {
+    "text": "Raza DemonHunter",
+    "level": "2",
+    "top": 536,
+    "height": 33
+  },
+  {
+    "text": "Pure Paladin",
+    "level": "2",
+    "top": 569,
+    "height": 33
+  },
+  {
+    "text": "Rafaam Warlock",
+    "level": "2",
+    "top": 603,
+    "height": 33
+  },
+  {
+    "text": "Leyline Mage",
+    "level": "2",
+    "top": 636,
+    "height": 33
+  },
+  {
+    "text": "Herald DeathKnight",
+    "level": "2",
+    "top": 670,
+    "height": 33
+  }
+]
