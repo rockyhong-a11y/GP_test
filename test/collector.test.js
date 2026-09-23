@@ -17,3 +17,5 @@ it('finds root-level Legend deck articles instead of category navigation',()=>{
   const links=parseDeckLinks('<a href="/standard-decks/mage/">Mage</a><a href="/burn-mage-50-legend-unknown/">Burn Mage #50 Legend – Unknown</a><a href="https://example.com/mage/">Mage Legend</a>');
   assert.equal(links.length,1); assert.equal(links[0].sourceUrl,'https://hearthstone-decks.net/burn-mage-50-legend-unknown/');
 });
+
+it('reads a real Code1 input before unrelated base64 in the page',()=>{const code='AAECAfHhBAzDgwf1mAfsmwfXnQfgnQftnweSpAfSrgeOvwfa1wes2ged2wcJgf0Gl4IHupUHn54H4rEHrtoHtNoHptwHv98HAAA=';const html='<style>AAEAAAAAAAAAAAAAAAAAAAAA</style><input id="Code1" type="text" value="'+code+'">';assert.equal(parseDeckCode(html),code);assert.equal(decodeDeckCode(code).format,2);assert.equal(decodeDeckCode(code).total,30);});

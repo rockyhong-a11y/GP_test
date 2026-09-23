@@ -42,8 +42,14 @@ export function parseDeckPage(html, link) {
 }
 
 export function parseDeckCode(html) {
-  const candidates=[html.match(/data-deck-code=["']([^"']+)/i)?.[1],html.match(/<textarea[^>]*class=["'][^"']*deck-code[^"']*["'][^>]*>([^<]+)/i)?.[1],html.match(/AAE[A-Za-z0-9+/=]{20,}/)?.[0]];
-  return candidates.find(c=>typeof c==='string'&&c.trim())?.trim() || null;
+  const inputs=[...html.matchAll(/<input\b[^>]*\bid=["']Code\d+["'][^>]*>/gi)]
+    .map(([tag])=>tag.match(/\bvalue=["']([^"']+)["']/i)?.[1]);
+  const candidates=[
+    ...inputs,
+    ...[...html.matchAll(/data-deck-code=["']([^"']+)/gi)].map(m=>m[1]),
+    ...[...html.matchAll(/<textarea[^>]*class=["'][^"']*deck-code[^"']*["'][^>]*>([^<]+)/gi)].map(m=>m[1])
+  ].filter(c=>typeof c==='string').map(c=>entities(c).trim());
+  return candidates.find(validDeckCode) || null;
 }
 function readVarint(bytes,state){let value=0,shift=0;for(let i=0;i<5;i++){if(state.at>=bytes.length)throw new Error('잘린 varint');const byte=bytes[state.at++];value+=(byte&127)*2**shift;if(!(byte&128))return value;shift+=7;}throw new Error('너무 긴 varint');}
 export function decodeDeckCode(code) {
