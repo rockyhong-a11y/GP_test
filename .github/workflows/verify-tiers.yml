@@ -4,6 +4,9 @@ on:
     branches: [fix/tier-data]
 permissions:
   contents: read
+concurrency:
+  group: tier-source-verification
+  cancel-in-progress: true
 jobs:
   tiers:
     runs-on: ubuntu-latest

@@ -20,7 +20,7 @@ export function parseRankingCells(cells){
   return rows;
 }
 export function parseVsReport(html,reportUrl){
-  const date=html.match(/<time\b[^>]*datetime=["']([^"']+)/i)?.[1];
+  const date=html.match(/<time\b[^>]*datetime=["']([^"']+)/i)?.[1] || (html.match(/<span\b[^>]*class=["'][^"']*entry-meta-date[^"']*["'][^>]*>([\s\S]*?)<\/span>/i)?.[1] && plain(html.match(/<span\b[^>]*class=["'][^"']*entry-meta-date[^"']*["'][^>]*>([\s\S]*?)<\/span>/i)[1])+' UTC');
   if(!date||!Number.isFinite(Date.parse(date)))throw new Error('보고서 게시 날짜를 찾지 못했습니다.');
   const links=[...html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)].map(m=>({sourceUrl:new URL(decode(m[1]),reportUrl).href,name:plain(m[2])})).filter(l=>new URL(l.sourceUrl).origin==='https://www.vicioussyndicate.com'&&new URL(l.sourceUrl).pathname.startsWith('/decks/'));
   return {date:new Date(date).toISOString(),links:[...new Map(links.map(l=>[l.sourceUrl,l])).values()]};
