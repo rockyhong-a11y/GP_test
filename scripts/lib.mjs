@@ -30,14 +30,14 @@ const entities=s=>String(s).replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Numb
 export function parseDeckLinks(html, base='https://hearthstone-decks.net') {
   const links=[]; const re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi; let match;
   while((match=re.exec(html))){const text=entities(match[2].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());let url;try{url=new URL(entities(match[1]),base)}catch{continue}
-    if(url.origin===new URL(base).origin&&/\/(?:deck|standard)[^?#]*\/?$/i.test(url.pathname)&&text&&!/standard decks?$/i.test(text))links.push({sourceUrl:url.href,name:text});}
+    if(url.origin===new URL(base).origin && /\blegend\b/i.test(text) && CLASS_WORDS.some(([,re])=>re.test(text)) && !/^\/(?:category|tag|author)\//i.test(url.pathname)) links.push({sourceUrl:url.href,name:text});}
   return [...new Map(links.map(x=>[x.sourceUrl,x])).values()];
 }
 const CLASS_WORDS=[['death-knight',/death[ -]?knight/i],['demon-hunter',/demon[ -]?hunter/i],['druid',/druid/i],['hunter',/hunter/i],['mage',/mage/i],['paladin',/paladin/i],['priest',/priest/i],['rogue',/rogue/i],['shaman',/shaman/i],['warlock',/warlock/i],['warrior',/warrior/i]];
 export function parseDeckPage(html, link) {
   const title=entities(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]?.replace(/<[^>]+>/g,' ').trim()||link.name);
   const klass=CLASS_WORDS.find(([,re])=>re.test(`${title} ${html.match(/class=["'][^"']*(?:category|class)[^"']*["'][^>]*>([^<]+)/i)?.[1]||''}`))?.[0]||null;
-  const rawDate=html.match(/<time[^>]*datetime=["']([^"']+)["']/i)?.[1]; const date=rawDate&&Number.isFinite(Date.parse(rawDate))?new Date(rawDate).toISOString():null;
+  const rawDate=html.match(/<time[^>]*datetime=["']([^"']+)["']/i)?.[1] || html.match(/<meta[^>]*property=["']article:published_time["'][^>]*content=["']([^"']+)["']/i)?.[1]; const date=rawDate&&Number.isFinite(Date.parse(rawDate))?new Date(rawDate).toISOString():null;
   return {id:new URL(link.sourceUrl).pathname.split('/').filter(Boolean).pop(),name:title,class:klass,tier:null,tierMethod:'unrated',winRate:null,sampleSize:null,sourceDate:date,sourceUrl:link.sourceUrl,deckCode:parseDeckCode(html)};
 }
 

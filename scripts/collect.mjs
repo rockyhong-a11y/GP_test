@@ -17,7 +17,8 @@ async function run() {
     const found=parseDeckLinks(await fetchWithRetry(metaUrl),base);
     const unique=[...new Map(found.map(x=>[x.sourceUrl,x])).values()];if(!unique.length)throw new Error('목록 페이지에서 덱 상세 링크를 찾지 못했습니다(페이지 구조 변경 가능).');
     const decks=[],counts={};
-    for(const link of unique) { await sleep(Number(process.env.REQUEST_DELAY_MS||1000));const deck=parseDeckPage(await fetchWithRetry(link.sourceUrl),link);if(deck.class&&validDeckCode(deck.deckCode)&&(counts[deck.class]||0)<2){decks.push(deck);counts[deck.class]=(counts[deck.class]||0)+1;}if(Object.keys(counts).length===11&&Object.values(counts).every(n=>n>=2))break; }
+    console.log(`덱 상세 링크 ${unique.length}개 발견`);
+    for(const link of unique) { const guessedClass = link.name.match(/death[ -]?knight|demon[ -]?hunter|druid|hunter|mage|paladin|priest|rogue|shaman|warlock|warrior/i)?.[0].toLowerCase().replace(/ /g,'-'); if((counts[guessedClass]||0)>=2)continue; if(!allowedByRobots(robots,new URL(link.sourceUrl).pathname))continue; await sleep(Number(process.env.REQUEST_DELAY_MS||1000));const deck=parseDeckPage(await fetchWithRetry(link.sourceUrl),link);if(deck.class&&validDeckCode(deck.deckCode)&&(counts[deck.class]||0)<2){decks.push(deck);counts[deck.class]=(counts[deck.class]||0)+1;}if(Object.keys(counts).length===11&&Object.values(counts).every(n=>n>=2))break; }
     if(!decks.length)throw new Error('유효한 덱 코드가 있는 덱을 찾지 못했습니다.');
     const data=validateData({schemaVersion:1,collectedAt:attemptedAt,collectionAttemptedAt:attemptedAt,source:{name:'Hearthstone-Decks.net',url:metaUrl,scope:'정규전 최신 공개 덱',tierRule},decks}); await atomic(data);
     console.log(`${decks.length}개 덱 수집 완료: ${data.collectedAt}`);

@@ -12,3 +12,8 @@ describe('collector',()=>{
   it('preserves the original collection time and decks after failure',()=>{const old={collectedAt:'2025-01-01T00:00:00Z',decks:[{id:'x'}]};assert.deepEqual(preserveAfterFailure(old,'timeout','2025-01-02T00:00:00Z'),{...old,collectionAttemptedAt:'2025-01-02T00:00:00Z',collectionError:'timeout'});});
   it('records failure metadata before the first successful collection',()=>{const old={collectedAt:null,decks:[]};assert.deepEqual(preserveAfterFailure(old,'blocked','2025-01-02T00:00:00Z'),{...old,collectionAttemptedAt:'2025-01-02T00:00:00Z',collectionError:'blocked'});});
 });
+
+it('finds root-level Legend deck articles instead of category navigation',()=>{
+  const links=parseDeckLinks('<a href="/standard-decks/mage/">Mage</a><a href="/burn-mage-50-legend-unknown/">Burn Mage #50 Legend – Unknown</a><a href="https://example.com/mage/">Mage Legend</a>');
+  assert.equal(links.length,1); assert.equal(links[0].sourceUrl,'https://hearthstone-decks.net/burn-mage-50-legend-unknown/');
+});
