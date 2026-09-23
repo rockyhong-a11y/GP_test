@@ -9,6 +9,6 @@ describe('collector',()=>{
   it('does not coerce a missing number to zero',()=>assert.equal(number(undefined),null));
   it('respects robots disallow rules',()=>assert.equal(allowedByRobots('User-agent: *\nDisallow: /meta','/meta'),false));
   it('rejects invalid schema data',()=>assert.throws(()=>validateData({schemaVersion:1})));
-  it('preserves the original collection time and decks after failure',()=>{const old={collectedAt:'2025-01-01T00:00:00Z',decks:[{id:'x'}]};assert.deepEqual(preserveAfterFailure(old,'timeout'),{...old,collectionError:'timeout'});});
-  it('records failure metadata before the first successful collection',()=>{const old={collectedAt:null,decks:[]};assert.deepEqual(preserveAfterFailure(old,'blocked'),{...old,collectionError:'blocked'});});
+  it('preserves the original collection time and decks after failure',()=>{const old={collectedAt:'2025-01-01T00:00:00Z',decks:[{id:'x'}]};assert.deepEqual(preserveAfterFailure(old,'timeout','2025-01-02T00:00:00Z'),{...old,collectionAttemptedAt:'2025-01-02T00:00:00Z',collectionError:'timeout'});});
+  it('records failure metadata before the first successful collection',()=>{const old={collectedAt:null,decks:[]};assert.deepEqual(preserveAfterFailure(old,'blocked','2025-01-02T00:00:00Z'),{...old,collectionAttemptedAt:'2025-01-02T00:00:00Z',collectionError:'blocked'});});
 });

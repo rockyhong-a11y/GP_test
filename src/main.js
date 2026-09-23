@@ -42,7 +42,8 @@ async function load() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json(); state.decks = data.decks; state.collectionError = data.collectionError || '';
     const age = data.collectedAt ? Date.now() - new Date(data.collectedAt).getTime() : Infinity;
-    $('#freshness').innerHTML = data.collectedAt ? `<strong>수집 ${formatKst(data.collectedAt)} KST</strong><span>${age > 12*36e5 ? '⚠ 오래된 데이터' : '최근 갱신'}</span>` : '<strong>수집 전</strong><span>최초 수집 대기 중</span>';
+    const attempt = data.collectionAttemptedAt ? ` · 시도 ${formatKst(data.collectionAttemptedAt)} KST` : '';
+    $('#freshness').innerHTML = data.collectedAt ? `<strong>수집 ${formatKst(data.collectedAt)} KST</strong><span>${age > 12*36e5 ? '⚠ 오래된 데이터' : '최근 갱신'}${attempt}</span>` : `<strong>수집 전</strong><span>최초 수집 대기 중${attempt}</span>`;
     render();
   } catch (error) { $('#freshness').textContent = '데이터를 불러오지 못함'; $('#results').innerHTML = `<div class="error"><h2>덱 데이터를 불러올 수 없습니다</h2><p>잠시 후 다시 시도해 주세요.</p><button onclick="location.reload()">다시 시도</button></div>`; }
 }

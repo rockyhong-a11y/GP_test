@@ -8,7 +8,7 @@
 - `robots.txt`를 먼저 확인하고 수집 경로가 금지되면 즉시 중단합니다. 요청은 식별 가능한 User-Agent, 15초 timeout, 지수형 retry(최대 3회), 상세 페이지 사이 기본 1초 간격을 적용합니다.
 - 이 출처는 메타 티어/전체 승률을 제공하지 않으므로 덱을 **미평가**로 표시합니다. 상세 페이지의 Score는 해당 플레이어의 개인 전적이므로 승률·표본·티어로 변환하지 않습니다. 게시 날짜(`sourceDate`)와 실제 수집 시각(`collectedAt`)도 별도로 보관합니다.
 - 모든 deckstring은 정규 base64, 예약 헤더, 버전/게임 형식, varint 영웅·카드 구간, 30~40장 합계와 후행 데이터를 끝까지 파싱한 경우에만 게시합니다. 외부 카드 DB에 존재하는 카드인지까지 확인하는 검사는 아닙니다. 명시적 데이터 스키마 검증 후 임시 파일을 rename하는 원자적 저장을 사용합니다.
-- 수집 실패 시 기존 `decks`와 원래 `collectedAt`을 그대로 보존하고 `collectionError`만 추가합니다. 앱은 실패/12시간 초과 데이터를 경고합니다.
+- 수집 실패 시 기존 `decks`와 원래 `collectedAt`을 그대로 보존하고 `collectionAttemptedAt`과 `collectionError`만 갱신합니다. 앱은 성공 수집 시각과 최근 시도 시각을 구분하고 실패/12시간 초과 데이터를 경고합니다.
 - 저장소의 초기 JSON은 **데모를 최신 데이터처럼 제시하지 않기 위해 비어 있으며 `collectedAt`도 `null`입니다.** 2026-09-23 후속 실행 컨테이너의 실제 hostname은 안내받은 `6ab39215bd4081918f48894ade56623c`가 아니라 `5fb7b4fcbe59`였고, HSGuru와 대체 출처 모두 CONNECT proxy HTTP 403으로 차단되었습니다. 따라서 실데이터를 만들 수 없었으며 Actions의 `workflow_dispatch`로 최초 수집을 실행해야 합니다.
 
 HTML 구조가 바뀌어 수집이 실패하면 마지막 정상 데이터가 계속 제공되며 워크플로는 실패 상태가 됩니다. 이는 조용히 부정확한 자료를 게시하는 것보다 의도된 동작입니다.
@@ -35,7 +35,7 @@ npm run build
 python3 -m http.server 4173
 ```
 
-수집기는 `npm run collect`로 실행합니다. 테스트에는 HTML fixture 파싱, robots 규칙, 실제 형식의 deckstring 헤더 검증, 스키마 거부 및 UI 필터가 포함됩니다. 운영 데이터 파일은 `public/data/decks.json`이며 수집 시각은 UTC ISO 문자열로 저장하고 UI에서 KST로 변환합니다.
+수집기는 일반 환경에서 `npm run collect`, 승인 프록시 환경에서는 `npm run collect:proxy`로 실행합니다. Node 24의 `--use-env-proxy`만 사용하며 프록시를 우회하거나 비밀값을 출력하지 않습니다. 테스트 fixture는 네트워크 차단으로 실제 페이지를 저장한 것이 아닌 파서 계약용 최소 마크업입니다. 운영 배포 전 실제 HTML 수집이 성공하고 유효한 덱이 하나 이상 없으면 collector는 실패합니다. 운영 데이터 파일은 `public/data/decks.json`이며 수집 시각은 UTC ISO 문자열로 저장하고 UI에서 KST로 변환합니다.
 
 ## UI
 

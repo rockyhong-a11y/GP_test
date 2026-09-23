@@ -2,6 +2,7 @@ import { assertData } from '../src/data-schema.js';
 
 export const USER_AGENT = 'GP-test-deck-collector/1.0 (+https://github.com/rockyhong-a11y/GP_test)';
 export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const networkDetail=error=>{let current=error,last='';for(let i=0;i<5&&current;i++){last=current.code?`${current.code}: ${current.message||''}`:current.message||last;current=current.cause;}return last;};
 
 export async function fetchWithRetry(url, { attempts=3, timeoutMs=15000, fetchImpl=fetch }={}) {
   let last;
@@ -11,7 +12,7 @@ export async function fetchWithRetry(url, { attempts=3, timeoutMs=15000, fetchIm
       const res=await fetchImpl(url,{headers:{'user-agent':USER_AGENT,'accept':'text/html,application/xhtml+xml'},signal:controller.signal}); clearTimeout(timer);
       if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
       return await res.text();
-    } catch(e) { const detail=e.cause?.code||e.cause?.message;last=new Error(detail?`${e.message} (${detail})`:e.message,{cause:e});if(i<attempts-1) await sleep(500 * 2**i); }
+    } catch(e) { const detail=networkDetail(e.cause);last=new Error(detail?`${e.message} (${detail})`:e.message,{cause:e});if(i<attempts-1) await sleep(500 * 2**i); }
   }
   throw last;
 }
@@ -60,7 +61,7 @@ export function decodeDeckCode(code) {
 }
 export function validDeckCode(code) { try { decodeDeckCode(code);return true; } catch { return false; } }
 export function validateData(data) { return assertData(data); }
-export function preserveAfterFailure(previous, message) {
+export function preserveAfterFailure(previous, message, attemptedAt=new Date().toISOString()) {
   if(!previous||!Array.isArray(previous.decks))return null;
-  return {...previous,collectionError:message};
+  return {...previous,collectionAttemptedAt:attemptedAt,collectionError:message};
 }

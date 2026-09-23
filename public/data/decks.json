@@ -8,5 +8,6 @@
     "tierRule": "출처에 메타 티어가 없으므로 모든 덱을 미평가로 표시합니다. 개인 Score는 승률이나 티어로 사용하지 않습니다."
   },
   "decks": [],
-  "collectionError": "fetch failed (EAI_AGAIN)"
+  "collectionError": "fetch failed (UND_ERR_ABORTED: Proxy response (403) !== 200 when HTTP Tunneling)",
+  "collectionAttemptedAt": "2026-09-23T09:11:57.702Z"
 }

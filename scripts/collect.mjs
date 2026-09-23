@@ -10,6 +10,7 @@ async function previous() { try{return JSON.parse(await readFile(output,'utf8'))
 async function atomic(data) { await mkdir(dirname(output),{recursive:true});const temp=`${output}.${process.pid}.tmp`;await writeFile(temp,JSON.stringify(data,null,2)+'\n');await rename(temp,output); }
 async function run() {
   const old=await previous();
+  const attemptedAt=new Date().toISOString();
   try {
     const robots=await fetchWithRetry(`${base}/robots.txt`);
     if(!allowedByRobots(robots,'/standard-deck/')) throw new Error('robots.txt가 수집 경로를 허용하지 않습니다.');
@@ -18,12 +19,12 @@ async function run() {
     const decks=[],counts={};
     for(const link of unique) { await sleep(Number(process.env.REQUEST_DELAY_MS||1000));const deck=parseDeckPage(await fetchWithRetry(link.sourceUrl),link);if(deck.class&&validDeckCode(deck.deckCode)&&(counts[deck.class]||0)<2){decks.push(deck);counts[deck.class]=(counts[deck.class]||0)+1;}if(Object.keys(counts).length===11&&Object.values(counts).every(n=>n>=2))break; }
     if(!decks.length)throw new Error('유효한 덱 코드가 있는 덱을 찾지 못했습니다.');
-    const data=validateData({schemaVersion:1,collectedAt:new Date().toISOString(),source:{name:'Hearthstone-Decks.net',url:metaUrl,scope:'정규전 최신 공개 덱',tierRule},decks}); await atomic(data);
+    const data=validateData({schemaVersion:1,collectedAt:attemptedAt,collectionAttemptedAt:attemptedAt,source:{name:'Hearthstone-Decks.net',url:metaUrl,scope:'정규전 최신 공개 덱',tierRule},decks}); await atomic(data);
     console.log(`${decks.length}개 덱 수집 완료: ${data.collectedAt}`);
   } catch(error) {
     console.error(`수집 실패: ${error.message}`);
-    const preserved=preserveAfterFailure(old,error.message);
-    if(preserved){ await atomic(preserved); console.error(`마지막 정상 데이터(${old.collectedAt})를 보존했습니다.`); }
+    const preserved=preserveAfterFailure(old,error.message,attemptedAt);
+    if(preserved){ await atomic(preserved); console.error(`기존 데이터와 정상 수집 시각(${old.collectedAt??'없음'})을 보존했습니다.`); }
     throw error;
   }
 }
