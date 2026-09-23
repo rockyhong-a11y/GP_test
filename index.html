@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="직업별 하스스톤 정규전 티어 덱과 복사 가능한 덱 코드" />
+    <title>선술집 기록보관소 — 하스스톤 티어 덱</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#results">덱 목록으로 건너뛰기</a>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">STANDARD · CURATED DECKS</p>
+        <h1>선술집 기록보관소</h1>
+        <p class="subtitle">검증된 출처에서 모은 최신 정규전 덱을 빠르게 찾고 복사하세요.</p>
+      </div>
+      <div id="freshness" class="freshness" aria-live="polite">데이터 확인 중…</div>
+    </header>
+    <main>
+      <section class="controls" aria-label="덱 검색 및 필터">
+        <label class="search"><span>덱 검색</span><input id="search" type="search" placeholder="덱 이름 또는 직업" autocomplete="off" /></label>
+        <label><span>티어</span><select id="tier"><option value="all">전체 평가</option><option value="unrated">미평가</option><option value="1">티어 1</option><option value="2">티어 2</option><option value="3">티어 3</option><option value="4">티어 4</option></select></label>
+        <label><span>정렬</span><select id="sort"><option value="tier">티어 순</option><option value="winrate">승률 높은 순</option></select></label>
+      </section>
+      <nav id="classFilters" class="class-filters" aria-label="직업 필터"></nav>
+      <div id="status" role="status" aria-live="polite"></div>
+      <div id="results" tabindex="-1"></div>
+    </main>
+    <footer><p>통계는 과거 경기 결과이며 미래 승률을 보장하지 않습니다. 출처의 집계 방식과 표본을 함께 확인하세요.</p></footer>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

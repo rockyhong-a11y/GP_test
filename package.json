@@ -1,0 +1,17 @@
+{
+  "name": "hearthstone-tier-decks-ko",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build && python3 -m http.server 4173 --directory dist",
+    "build": "node scripts/build.mjs",
+    "collect": "node scripts/collect.mjs",
+    "collect:proxy": "NODE_USE_ENV_PROXY=1 node --use-env-proxy scripts/collect.mjs",
+    "validate:data": "node scripts/validate-data.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": { "node": ">=24" }
+}
