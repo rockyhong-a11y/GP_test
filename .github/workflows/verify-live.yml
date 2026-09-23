@@ -1,0 +1,35 @@
+name: Verify live deck collection
+on:
+  push:
+    branches: [codex]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - name: Verify public source connectivity
+        run: |
+          mkdir -p diagnostics
+          curl --fail --show-error --location --max-time 30 https://hearthstone-decks.net/robots.txt -o diagnostics/robots.txt
+          curl --fail --show-error --location --max-time 30 https://hearthstone-decks.net/standard-deck/ -o diagnostics/listing.html
+          wc -c diagnostics/*
+      - run: npm test
+      - name: Collect live data
+        run: npm run collect
+      - run: npm run validate:data
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-collection-evidence
+          path: |
+            diagnostics/
+            public/data/decks.json
+          retention-days: 3
