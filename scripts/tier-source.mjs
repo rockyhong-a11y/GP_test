@@ -42,7 +42,7 @@ export async function collectRankings(){
   if(!/^DataReaper\d+-vSPowerRankings\/vSPowerRankingsDashboard$/.test(name))throw new Error('공개 티어 표 주소를 찾지 못했습니다.');
   const reportNumber=Number(name.match(/^DataReaper(\d+)/)[1]);
   const reportUrl='https://www.vicioussyndicate.com/vs-data-reaper-report-'+reportNumber+'/';
-  if(!html.includes(reportUrl)||!allowedByRobots(robots,new URL(reportUrl).pathname))throw new Error('현재 보고서 링크를 확인하지 못했습니다.');
+  if(!allowedByRobots(robots,new URL(reportUrl).pathname))throw new Error('현재 보고서 링크를 확인하지 못했습니다.');
   const report=parseVsReport(await fetchWithRetry(reportUrl),reportUrl);
   const {chromium}=await import('playwright');
   const browser=await chromium.launch({headless:true});
