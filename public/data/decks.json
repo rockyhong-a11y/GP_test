@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "collectedAt": "2026-09-23T23:25:54.054Z",
-  "collectionAttemptedAt": "2026-09-23T23:25:54.054Z",
+  "collectionAttemptedAt": "2026-09-24T08:08:27.172Z",
   "source": {
     "name": "Vicious Syndicate",
     "url": "https://www.vicioussyndicate.com/drr/vs-power-rankings-data-reaper-report/",
@@ -348,5 +348,6 @@
       "sourceName": "Hearthstone-Decks.net",
       "unratedReason": "현재 vS 티어 표에 평가가 없는 직업의 공개 전설 덱입니다."
     }
-  ]
+  ],
+  "collectionError": "https://www.vicioussyndicate.com/vs-data-reaper-report-359/: HTTP 404"
 }
