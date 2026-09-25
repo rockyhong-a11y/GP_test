@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "collectedAt": "2026-09-25T19:07:33.537Z",
-  "collectionAttemptedAt": "2026-09-25T19:07:33.537Z",
+  "collectionAttemptedAt": "2026-09-25T23:49:05.788Z",
   "source": {
     "name": "Vicious Syndicate",
     "url": "https://www.vicioussyndicate.com/drr/vs-power-rankings-data-reaper-report/",
@@ -382,5 +382,6 @@
       "sourceName": "Hearthstone-Decks.net",
       "unratedReason": "현재 vS 티어 표에 평가가 없는 직업의 공개 전설 덱입니다."
     }
-  ]
+  ],
+  "collectionError": "티어 표의 전설 상위 1,000명 기준을 확인하지 못했습니다."
 }
